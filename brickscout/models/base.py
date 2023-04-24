@@ -19,11 +19,33 @@ class BaseModel:
         
         return self
     
-    def set_error(self, returned_content: str, status: int) -> 'BaseModel':
+    def set_error_from_response(self, response: dict) -> 'BaseModel':
+        return self.set_error(
+            response['type'],
+            response['exceptionCode'],
+            response['developerMessage'],
+            response['moreInfoUrl'],
+            response['timeStamp']
+        )
+    
+    def set_error(self,
+        type: str,
+        exception_code: str,
+        developer_message: str,
+        more_info_url: str,
+        timestamp: str          
+        ) -> 'BaseModel':
+        
         """ Sets the error flag to True and assigns the status code to it. """
         from .errors import Error
         self.has_error = True
-        self.error = Error(returned_content=returned_content, status=status)
+        self.error = Error(
+            type=type,
+            exception_code=exception_code,
+            developer_message=developer_message,
+            more_info_url=more_info_url,
+            timestamp=timestamp
+        )
         
         return self
     

@@ -5,6 +5,7 @@ from typing import Tuple, Optional, Literal
 from . import config
 from .auth_handler import AuthHandler
 from .cache_handler import CacheHandler
+from brickscout.endpoints.orders import OrdersEndpoint
 
 class BrickScoutAPI:
 
@@ -18,6 +19,8 @@ class BrickScoutAPI:
         
         self._auth_handler = AuthHandler(self)
         self._access_token = None
+        
+        self.orders = OrdersEndpoint(self)
         
     def _set_token_header(self, token: str) -> None:
         """ Sets the Authorization Bearer token for the next requests. """
@@ -103,7 +106,32 @@ class BrickScoutAPI:
         response = self._do_request(method, url, data, headers, **kwargs)
         response_type = response.headers.get('Content-Type', '')
         resp_content = response.json() if 'application/json' in response_type else response.content
+        
+        # Unauthorized, token is not valid anymore
+        if response.status_code == 401: 
+            refresh_token = self._auth_handler.get_token_from_cache('refresh_token')
+            
+            # If we have a refresh token, get a new access token with it
+            if refresh_token:
+                auth_tokens = self._auth_handler._get_tokens_from_refresh_token(refresh_token)
+                
+                if not auth_tokens:
+                    # Delete cache and get new tokens
+                    # This will force new tokens without the cached refresh token
+                    self._cache_handler.delete(self._username)
+                    auth_tokens = self._auth_handler.get_tokens()
+            else:
+                # No refresh token, get new tokens with username and password
+                auth_tokens = self._auth_handler.get_tokens()
 
+            # Set the new token in the headers
+            self._set_token_header(auth_tokens.get('access_token'))
+            
+            # Resend request after forcing new tokens
+            response = self._do_request(method, url, data, headers, **kwargs)
+            response_type = response.headers.get('Content-Type', '')
+            resp_content = response.json() if 'application/json' in response_type else response.content
+            
         return response.status_code, response.headers, resp_content
     
     def get(self, url: str, data: Optional[dict] = None, headers: Optional[dict] = None, **kwargs: dict) -> Tuple[int, dict, dict]:

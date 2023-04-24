@@ -49,20 +49,41 @@ class CacheHandler:
         :rtype: any
         """
         
-        print(config.CACHE)
-        
         if key in config.CACHE: return config.CACHE[key]
         
         full_path = f'{self.cache_dir}/{key}.txt'
         
-        print(full_path)
-        
+        # Check if the file exists
         if not os.path.exists(full_path):
             if self.fail_silently: return default
             raise ValueError(f'"{key}" does not exist inside cache.')
         
+        # Read the cache file
         with open(full_path, 'r') as cache_file:
             str_value = cache_file.read()
         
         value = json.loads(str_value)
         return value
+    
+    def delete(self, key: str) -> bool:
+        """ Delete value from the corresponding key. 
+        :param key: unique key that holds the returning value.
+        :type key: str
+        :return: True if the value was deleted, False if the value was not deleted.
+        :rtype: bool
+        """
+        
+        full_path = f'{self.cache_dir}/{key}.txt'
+        
+        # Check if the file exists
+        if not os.path.exists(full_path):
+            if self.fail_silently: return False
+            raise ValueError(f'"{key}" does not exist inside cache.')
+        
+        # Delete the cache file
+        try:
+            os.remove(full_path)
+            return True
+        except:
+            if self.fail_silently: return False
+            raise ValueError(f'Could not delete "{key}" from cache.')
