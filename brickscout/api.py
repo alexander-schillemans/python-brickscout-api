@@ -1,20 +1,22 @@
 import requests
 import json
-from typing import Tuple, Optional
-from typing_extensions import Literal
+from typing import Tuple, Optional, Literal
 
 from . import config
 from .auth_handler import AuthHandler
+from .cache_handler import CacheHandler
 
 class BrickScoutAPI:
 
     def __init__(self, username: str, password: str) -> None:
-        self.username = username
-        self.password = password
+        self._username = username
+        self._password = password
         
         self._base_url = config.BASE_URL
         self._headers = { 'Content-Type' : 'application/json', 'Accept' : 'application/json' }
-        self._auth_handler = AuthHandler(self, username, password)
+        self._cache_handler = CacheHandler(fail_silently=True)
+        
+        self._auth_handler = AuthHandler(self)
         self._access_token = None
         
     def _set_token_header(self, token: str) -> None:
@@ -27,8 +29,8 @@ class BrickScoutAPI:
         """ Checks if a token is present in the headers. If not, request one and add to the headers."""
         
         if not self._access_token or not 'Authorization' in self._headers:
-            auth_tokens = self._auth_handler.authenticate()
-            self._set_token_header(auth_tokens.get('accessToken'))
+            auth_tokens = self._auth_handler.get_tokens()
+            self._set_token_header(auth_tokens.get('access_token'))
 
     def _update_headers(self, headers: dict) -> dict:
         """ Takes the initial headers and updates it with the given headers. Returns the updated headers. 
@@ -100,7 +102,7 @@ class BrickScoutAPI:
         # Make the request
         response = self._do_request(method, url, data, headers, **kwargs)
         response_type = response.headers.get('Content-Type', '')
-        resp_content = response.json() if response_type == 'application/json' else response.content
+        resp_content = response.json() if 'application/json' in response_type else response.content
 
         return response.status_code, response.headers, resp_content
     

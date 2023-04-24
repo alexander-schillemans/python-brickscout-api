@@ -49,9 +49,13 @@ class CacheHandler:
         :rtype: any
         """
         
+        print(config.CACHE)
+        
         if key in config.CACHE: return config.CACHE[key]
         
         full_path = f'{self.cache_dir}/{key}.txt'
+        
+        print(full_path)
         
         if not os.path.exists(full_path):
             if self.fail_silently: return default
@@ -61,4 +65,4 @@ class CacheHandler:
             str_value = cache_file.read()
         
         value = json.loads(str_value)
-        return 
+        return value
