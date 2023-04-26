@@ -40,7 +40,7 @@ class BaseModel:
         self.has_error = False
         self.error = None
     
-    def construct_from_response(self, resp_data: dict) -> 'BaseModel' | 'ObjectListModel':
+    def construct_from_response(self, resp_data: dict) -> Union['BaseModel', 'ObjectListModel']:
         """ Construct an object from the returned response data. """
         
         constructed_obj = construct_from_data(resp_data)
