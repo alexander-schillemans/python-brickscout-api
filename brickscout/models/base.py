@@ -1,6 +1,33 @@
 from typing import Union, Optional
 from types import SimpleNamespace
 
+def construct_from_data(data: Union[dict, list]) -> 'BaseModel':
+    """ Construct an object from the given data. """
+    
+    if isinstance(data, list):
+        object = ObjectListModel()
+        
+        for item in data:
+            if isinstance(item, dict) or isinstance(item, list):
+                sub_object = construct_from_data(item)
+                object.add(sub_object)
+            else:
+                object.add(item)
+        
+    elif isinstance(data, dict):
+        object = BaseModel()
+    
+        for key, value in data.items():
+            if isinstance(value, dict) or isinstance(value, list):
+                sub_object = construct_from_data(value)
+                setattr(object, key, sub_object)
+            else:   
+                setattr(object, key, value)
+    else:
+        raise TypeError(f'Cannot construct object from data of type {type(data)}')
+    
+    return object
+
 class BaseModel:
     
     def __init__(self) -> None:
@@ -10,13 +37,7 @@ class BaseModel:
     def construct_from_response(self, resp_data: dict) -> 'BaseModel':
         """ Construct an object from the returned response data. """
         
-        for key, value in resp_data.items():
-            if isinstance(value, dict):
-                sub_object = self.construct_from_response(value)
-                setattr(self, key, sub_object)
-            else:
-                setattr(self, key, value)
-        
+        self = construct_from_data(resp_data)
         return self
     
     def set_error_from_response(self, response: dict) -> 'BaseModel':
@@ -67,18 +88,5 @@ class ObjectListModel(BaseModel):
         self.list.remove(item)
         return self.list
     
-    def construct_from_response(self, json: Union[dict, list]) -> 'ObjectListModel':
-        """ Construct a list of objects from the returned response data. """
-        
-        if isinstance(json, dict):
-            item_obj = BaseModel().construct_from_response(json)
-            self.add(item_obj)
-        elif isinstance(json, list):
-            for item in json:
-                item_obj = BaseModel().construct_from_response(item)
-                self.add(item_obj)
-
-        return self
-    
-    def items(self) -> list:
+    def iterator(self) -> list:
         return self.list

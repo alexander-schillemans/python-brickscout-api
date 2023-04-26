@@ -51,6 +51,6 @@ class OrdersEndpoint(APIEndpoint):
         # The API does not allow us to filter on the payment status
         # So we have to filter them out manually
         list_model = ObjectListModel()
-        list_model.list = [order for order in orders.items() if order.payment]
+        list_model.list = [order for order in orders.iterator() if order.payment]
 
         return list_model
