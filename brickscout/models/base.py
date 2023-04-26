@@ -2,7 +2,13 @@ from typing import Union, Optional
 from types import SimpleNamespace
 
 def construct_from_data(data: Union[dict, list]) -> 'BaseModel':
-    """ Construct an object from the given data. """
+    """ Construct an object from the given data. 
+    
+    :param data: the data to construct the object from.
+    :type data: Union[dict, list]
+    :return: the constructed object. Dict data will be converted to a BaseModel, list data will be converted to an ObjectListModel.
+    :rtype: BaseModel or ObjectListModel
+    """
     
     if isinstance(data, list):
         object = ObjectListModel()
@@ -34,11 +40,11 @@ class BaseModel:
         self.has_error = False
         self.error = None
     
-    def construct_from_response(self, resp_data: dict) -> 'BaseModel':
+    def construct_from_response(self, resp_data: dict) -> 'BaseModel' | 'ObjectListModel':
         """ Construct an object from the returned response data. """
         
-        self = construct_from_data(resp_data)
-        return self
+        constructed_obj = construct_from_data(resp_data)
+        return constructed_obj
     
     def set_error_from_response(self, response: dict) -> 'BaseModel':
         return self.set_error(
