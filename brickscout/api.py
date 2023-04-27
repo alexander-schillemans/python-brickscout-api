@@ -9,11 +9,21 @@ from brickscout.endpoints.orders import OrdersEndpoint
 
 class BrickScoutAPI:
 
-    def __init__(self, username: str, password: str) -> None:
+    def __init__(self, username: str, password: str, test_mode: bool = False) -> None:
+        """ Initializes the BrickScoutAPI class. 
+        
+        :param username: the username to use for authentication.
+        :type username: str
+        :param password: the password to use for authentication.
+        :type password: str
+        :param test_mode: whether to use the test environment for the API or not. Default False.
+        :type test_mode: bool
+        """
+        
         self._username = username
         self._password = password
         
-        self._base_url = config.BASE_URL
+        self._base_url = config.BASE_URL if not test_mode else config.TEST_BASE_URL
         self._headers = { 'Content-Type' : 'application/json', 'Accept' : 'application/json' }
         self._cache_handler = CacheHandler(fail_silently=True)
         

@@ -1,38 +1,4 @@
 from typing import Union, Optional
-from types import SimpleNamespace
-
-def construct_from_data(data: Union[dict, list]) -> 'BaseModel':
-    """ Construct an object from the given data. 
-    
-    :param data: the data to construct the object from.
-    :type data: Union[dict, list]
-    :return: the constructed object. Dict data will be converted to a BaseModel, list data will be converted to an ObjectListModel.
-    :rtype: BaseModel or ObjectListModel
-    """
-    
-    if isinstance(data, list):
-        object = ObjectListModel()
-        
-        for item in data:
-            if isinstance(item, dict) or isinstance(item, list):
-                sub_object = construct_from_data(item)
-                object.add(sub_object)
-            else:
-                object.add(item)
-        
-    elif isinstance(data, dict):
-        object = BaseModel()
-    
-        for key, value in data.items():
-            if isinstance(value, dict) or isinstance(value, list):
-                sub_object = construct_from_data(value)
-                setattr(object, key, sub_object)
-            else:   
-                setattr(object, key, value)
-    else:
-        raise TypeError(f'Cannot construct object from data of type {type(data)}')
-    
-    return object
 
 class BaseModel:
     
@@ -42,39 +8,14 @@ class BaseModel:
     
     def construct_from_response(self, resp_data: dict) -> Union['BaseModel', 'ObjectListModel']:
         """ Construct an object from the returned response data. """
-        
-        constructed_obj = construct_from_data(resp_data)
-        return constructed_obj
+        from .utils import construct_object_from_data
+        return construct_object_from_data(resp_data)
+         
     
-    def set_error_from_response(self, response: dict) -> 'BaseModel':
-        return self.set_error(
-            response['type'],
-            response['exceptionCode'],
-            response['developerMessage'],
-            response['moreInfoUrl'],
-            response['timeStamp']
-        )
-    
-    def set_error(self,
-        type: str,
-        exception_code: str,
-        developer_message: str,
-        more_info_url: str,
-        timestamp: str          
-        ) -> 'BaseModel':
-        
-        """ Sets the error flag to True and assigns the status code to it. """
-        from .errors import Error
-        self.has_error = True
-        self.error = Error(
-            type=type,
-            exception_code=exception_code,
-            developer_message=developer_message,
-            more_info_url=more_info_url,
-            timestamp=timestamp
-        )
-        
-        return self
+    def construct_error_from_response(self, response: dict) -> 'BaseModel':
+        """ Construct an error object from the returned response data and attach it to a BaseModel. """
+        from .utils import construct_error_from_data
+        return construct_error_from_data(response)
     
     def __getattr__(self, name: str) -> None:
         """ Gets called when an attribute is not found. Always returns None."""
