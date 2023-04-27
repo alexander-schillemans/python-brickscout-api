@@ -9,8 +9,8 @@ class AuthHandler:
         self._api = api
         self._cache_handler = api._cache_handler
         
-        self._base_url = config.BASE_URL
-        self._auth_url = config.AUTH_URL
+        self._base_url = api._base_url
+        self._auth_url = config.AUTH_URL if api._test_mode else config.TEST_AUTH_URL
         self._username = api._username
         self._password = api._password
         

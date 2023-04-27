@@ -23,6 +23,7 @@ class BrickScoutAPI:
         self._username = username
         self._password = password
         
+        self._test_mode = test_mode
         self._base_url = config.BASE_URL if not test_mode else config.TEST_BASE_URL
         self._headers = { 'Content-Type' : 'application/json', 'Accept' : 'application/json' }
         self._cache_handler = CacheHandler(fail_silently=True)
