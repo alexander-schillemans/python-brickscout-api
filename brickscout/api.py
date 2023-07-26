@@ -59,12 +59,12 @@ class BrickScoutAPI:
         tmp_headers.update(headers)
         return tmp_headers
 
-    def _do_request(self, method: Literal['GET', 'POST', 'PUT'], url: str, data: Optional[dict] = None, headers: Optional[dict] = None, prepend_base_to_url: Optional[bool] = True) -> requests.Response:
+    def _do_request(self, method: Literal['GET', 'POST', 'PUT', 'PATCH', 'DELETE'], url: str, data: Optional[dict] = None, headers: Optional[dict] = None, prepend_base_to_url: Optional[bool] = True) -> requests.Response:
         """ Makes a request to the given url, with the given method and data; updates headers with new values if given.
         By default, the BASE_URL is prepended to the URL. If the arg "prepend_base_to_url" is set to False, it will not be prepended.
         
         :param method: the HTTP method to use for the request.
-        :type method: Literal['GET', 'POST', 'PUT']
+        :type method: Literal['GET', 'POST', 'PUT', 'PATCH', 'DELETE']
         :param url: the URL to make the request to.
         :type url: str
         :param data: the data to send with the request. Default None.
@@ -90,7 +90,13 @@ class BrickScoutAPI:
             response = requests.post(request_url, data=json.dumps(data), headers=headers)
         elif method == 'PUT':
             response = requests.put(request_url, data=json.dumps(data), headers=headers)
-        
+        elif method == 'PATCH':
+            response = requests.patch(request_url, data=json.dumps(data), headers=headers)
+        elif method == 'DELETE':
+            response = requests.delete(request_url, data=json.dumps(data), headers=headers)
+        else:
+            return ValueError(f'Invalid method: {method}')
+            
         return response
 
 
@@ -158,4 +164,14 @@ class BrickScoutAPI:
     def put(self, url: str, data: Optional[dict] = None, headers: Optional[dict] = None, **kwargs: dict) -> Tuple[int, dict, dict]:
         """ Makes a PUT request to the given URL, with the given data and headers. """
         status, headers, response = self._request('PUT', url, data, headers, **kwargs)
+        return status, headers, response
+
+    def patch(self, url: str, data: Optional[dict] = None, headers: Optional[dict] = None, **kwargs: dict) -> Tuple[int, dict, dict]:
+        """ Makes a PATCH request to the given URL, with the given data and headers. """
+        status, headers, response = self._request('PATCH', url, data, headers, **kwargs)
+        return status, headers, response
+    
+    def delete(self, url: str, data: Optional[dict] = None, headers: Optional[dict] = None, **kwargs: dict) -> Tuple[int, dict, dict]:
+        """ Makes a DELETE request to the given URL, with the given data and headers. """
+        status, headers, response = self._request('DELETE', url, data, headers, **kwargs)
         return status, headers, response

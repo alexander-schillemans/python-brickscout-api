@@ -10,7 +10,7 @@ class AuthHandler:
         self._cache_handler = api._cache_handler
         
         self._base_url = api._base_url
-        self._auth_url = config.AUTH_URL if api._test_mode else config.TEST_AUTH_URL
+        self._auth_url = config.AUTH_URL if not api._test_mode else config.TEST_AUTH_URL
         self._username = api._username
         self._password = api._password
         
@@ -53,6 +53,8 @@ class AuthHandler:
         """ Makes a request to the authentication server. """
         
         auth_url = f'{self._auth_url}/token?{urlencode(params)}'
+        
+        print(auth_url)
         
         # Make the request
         response = self._api._do_request('POST', auth_url, prepend_base_to_url=False)

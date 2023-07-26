@@ -33,6 +33,7 @@ def construct_object_from_data(data: Union[dict, list]) -> 'BaseModel':
     else:
         raise TypeError(f'Cannot construct object from data of type {type(data)}')
     
+    setattr(object, 'initial', False)
     return object
 
 def construct_error_from_data(data: dict) -> 'BaseModel':
@@ -44,15 +45,12 @@ def construct_error_from_data(data: dict) -> 'BaseModel':
     :rtype: BaseModel
     """
     
-    try:
-        type = data['type']
-        exception_code = data['exceptionCode']
-        developer_message = data['developerMessage']
-        more_info_url = data['moreInfoUrl']
-        timestamp = data['timeStamp']
-    except KeyError as e:
-        raise KeyError(f'Cannot construct error object from data. Missing key: {e}')
-    
+    type = data['type'] if 'type' in data else None
+    exception_code = data['exceptionCode'] if 'exceptionCode' in data else None
+    developer_message = data['developerMessage'] if 'developerMessage' in data else None
+    more_info_url = data['moreInfoUrl'] if 'moreInfoUrl' in data else None
+    timestamp = data['timeStamp'] if 'timeStamp' in data else None
+
     object = BaseModel()
     
     object.has_error = True
@@ -64,5 +62,5 @@ def construct_error_from_data(data: dict) -> 'BaseModel':
         timestamp=timestamp
     )
     
+    setattr(object, 'initial', False)
     return object
-    

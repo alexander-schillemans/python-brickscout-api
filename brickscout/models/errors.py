@@ -10,6 +10,8 @@ class Error(BaseModel):
         timestamp=None
     ):
         
+        super().__init__()
+        
         self.type = type
         self.exception_code = exception_code
         self.developer_message = developer_message

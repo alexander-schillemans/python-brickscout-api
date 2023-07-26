@@ -38,6 +38,78 @@ class OrdersEndpoint(APIEndpoint):
         
         return construct_object_from_data(resp_json)
     
+    def manual_update(self, uuid, patches) -> BaseModel:
+        """ Pushes given JSON patches to the order with the given id.
+        :param uuid: the id of the order to update.
+        :type uuid: str
+        :param patches: the patches to apply to the order.
+        :type patches: list
+        :return: the updated order.
+        :rtype: BaseModel
+        """
+        
+        status, headers, resp_json = self.api.patch(f'{self.endpoint}/{uuid}/payment', patches)
+        if status > 299: return construct_error_from_data(resp_json)
+        
+        return construct_object_from_data(resp_json)
+    
+    def mark_as_paid(self, order: BaseModel) -> BaseModel:
+        """ Marks the order as paid. """
+        if not order.uuid: raise ValueError('The order must have an id.')
+        
+        patch = [
+            {'op': 'replace', 'path': '/status', 'value': 'COMPLETED'},
+        ]
+        
+        status, headers, resp_json = self.api.patch(f'{self.endpoint}/{order.uuid}/payment', patch)
+        if status > 299: return construct_error_from_data(resp_json)
+        
+        return construct_object_from_data(resp_json)
+    
+    def mark_as_packed(self, order: BaseModel) -> BaseModel:
+        """ Marks the order as packed. """
+        if not order.uuid: raise ValueError('The order must have an id.')
+        
+        patch = [
+            {'op': 'replace', 'path': '/packed', 'value': True },
+        ]
+        
+        status, headers, resp_json = self.api.patch(f'{self.endpoint}/{order.uuid}', patch)
+        if status > 299: return construct_error_from_data(resp_json)
+        
+        return construct_object_from_data(resp_json)
+    
+    def mark_as_shipped(self, order: BaseModel) -> BaseModel:
+        """ Marks the order as shipped. """
+        if not order.uuid: raise ValueError('The order must have an id.')
+        
+        patch = [
+            {'op': 'replace', 'path': '/shipped', 'value': True },
+        ]
+        
+        status, headers, resp_json = self.api.patch(f'{self.endpoint}/{order.uuid}', patch)
+        if status > 299: return construct_error_from_data(resp_json)
+        
+        return construct_object_from_data(resp_json)
+
+    def update(self, order: BaseModel) -> BaseModel:
+        """ Updates the order with the given id. 
+        :param id: the id of the order to update.
+        :type id: str
+        :param order: the order to update with the new data.
+        :type data: BaseModel
+        :return: the updated order.
+        :rtype: BaseModel
+        """
+
+        if not order.uuid: raise ValueError('The order must have an id.')
+        if not order.patches or len(order.patches) < 1: raise ValueError('The order must have at least one patch.')
+        
+        status, headers, resp_json = self.api.patch(f'{self.endpoint}/{order.uuid}', order.patches)
+        if status > 299: return construct_error_from_data(resp_json)
+        
+        return construct_object_from_data(resp_json)
+    
     def get_open_orders(self) -> ObjectListModel:
         """ Returns a list of open orders. An order is considered open if it has not been deleted and has not been shipped. """
         
