@@ -9,7 +9,7 @@ with open(path.join(this_directory, 'README.md'), encoding='utf-8') as f:
 setup(
   name = 'python-brickscout-api',         
   packages=['brickscout', 'brickscout.models', 'brickscout.constants', 'brickscout.endpoints', 'brickscout.cache'],
-  version = '1.1.0',
+  version = '1.1.1',
   license='GPL-3.0-or-later',
   description = 'Wrapper for the BrickScout API',
   long_description=long_description,
@@ -17,11 +17,11 @@ setup(
   author = 'Alexander Schillemans',
   author_email = 'alexander.schillemans@hotmail.com',
   url = 'https://github.com/alexanderlhsglobal/python-brickscout-api',
-  download_url = 'https://github.com/alexanderlhsglobal/python-brickscout-api/archive/refs/tags/1.1.0.tar.gz',
+  download_url = 'https://github.com/alexanderlhsglobal/python-brickscout-api/archive/refs/tags/1.1.1.tar.gz',
   keywords = ['brickscout', 'brick', 'scout', 'brick scout', 'lego', 'api'],
   install_requires=[
           'requests',
-          'requests_oauthlib'
+          'requests_oauthlib',
           'jsonpatch',
       ],
   classifiers=[
