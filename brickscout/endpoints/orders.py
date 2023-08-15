@@ -79,13 +79,16 @@ class OrdersEndpoint(APIEndpoint):
         
         return construct_object_from_data(resp_json)
     
-    def mark_as_shipped(self, order: BaseModel) -> BaseModel:
+    def mark_as_shipped(self, order: BaseModel, track_and_trace: Optional[str] = None) -> BaseModel:
         """ Marks the order as shipped. """
         if not order.uuid: raise ValueError('The order must have an id.')
         
         patch = [
             {'op': 'replace', 'path': '/shipped', 'value': True },
         ]
+        
+        if track_and_trace:
+            patch.append({'op': 'replace', 'path': '/shipmentTrackingId', 'value': track_and_trace })
         
         status, headers, resp_json = self.api.patch(f'{self.endpoint}/{order.uuid}', patch)
         if status > 299: return construct_error_from_data(resp_json)
